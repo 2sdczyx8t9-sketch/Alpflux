@@ -1,16 +1,45 @@
-// Scroll progress bar
 const progressBar = document.getElementById("scrollProgress");
+const screens = Array.from(document.querySelectorAll(".screen"));
 
-function updateScrollProgress() {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight;
-  const winHeight = window.innerHeight;
-  const maxScroll = docHeight - winHeight;
-  const ratio = maxScroll > 0 ? scrollTop / maxScroll : 0;
+function setActiveScreen(targetId) {
+  let next = targetId;
+  if (!next || !document.getElementById(next)) {
+    next = "screen-1";
+  }
+  screens.forEach((screen) => {
+    screen.classList.toggle("is-active", screen.id === next);
+  });
   if (progressBar) {
-    progressBar.style.width = `${Math.min(Math.max(ratio, 0), 1) * 100}%`;
+    progressBar.style.width = "0%";
   }
 }
 
-window.addEventListener("scroll", updateScrollProgress);
-window.addEventListener("load", updateScrollProgress);
+function handleHashChange() {
+  const hash = window.location.hash.replace("#", "");
+  setActiveScreen(hash);
+}
+
+document.querySelectorAll('a[href^="#"]').forEach((link) => {
+  link.addEventListener("click", (event) => {
+    const hash = link.getAttribute("href");
+    if (!hash || hash === "#") {
+      return;
+    }
+    event.preventDefault();
+    history.replaceState(null, "", hash);
+    handleHashChange();
+  });
+});
+
+document.querySelectorAll("[data-next]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const target = button.getAttribute("data-next");
+    if (target) {
+      history.replaceState(null, "", target);
+      handleHashChange();
+    }
+  });
+});
+
+window.addEventListener("hashchange", handleHashChange);
+window.addEventListener("load", handleHashChange);
